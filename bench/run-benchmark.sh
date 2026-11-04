@@ -3,13 +3,17 @@
 #   bash bench/run-benchmark.sh                 # Claude Code: no CLAUDE.md vs with one
 #   CONFIGS=no-claude-md,with-claude-md,tinyagent bash bench/run-benchmark.sh
 # Needs: git, python3 >= 3.10, Claude Code (`claude`) logged in. tinyagent also needs ANTHROPIC_API_KEY.
-# Rough cost with Sonnet: 15 tasks x 2 configs x 2 repeats = 60 runs, about $10 to $30.
+# Default is the cheap run: Haiku, 8 tasks x 2 configs x 1 repeat = 16 runs, well under $1 at API prices.
+# With a Claude Pro/Max login, Claude Code runs count against your plan's usage instead of billing per token.
+# Bigger run for the writeup: MODEL=claude-sonnet-5-5 TASKS=15 REPEATS=2 bash bench/run-benchmark.sh
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SRC="$(dirname "$HERE")"
 WORK="${WORK:-$HOME/agentcheck-bench}"
-TASKS="${TASKS:-15}"
+TASKS="${TASKS:-8}"
+MODEL="${MODEL:-claude-haiku-5-5}"
+REPEATS="${REPEATS:-1}"
 CONFIGS="${CONFIGS:-no-claude-md,with-claude-md}"
 
 mkdir -p "$WORK" && cd "$WORK"
@@ -22,7 +26,7 @@ pip install -q -e "$SRC[tinyagent]" pytest
 cd more-itertools
 mkdir -p .agentcheck
 cp "$HERE/more-itertools/CLAUDE.md" .agentcheck/CLAUDE.md
-cp "$HERE/more-itertools/agentcheck.yaml" agentcheck.yaml
+sed "s/claude-sonnet-5-5/$MODEL/" "$HERE/more-itertools/agentcheck.yaml" > agentcheck.yaml
 
 echo "== 1. mining tasks"
 [ -s .agentcheck/tasks.jsonl ] || agentcheck mine --limit "$TASKS" --since 2019-01-01
@@ -31,7 +35,7 @@ agentcheck tasks
 echo "== 2. sanity check (should be 0% vs 100%)"
 agentcheck run --configs noop,oracle --repeats 1
 
-echo "== 3. the real run: $CONFIGS"
-agentcheck run --configs "$CONFIGS"
+echo "== 3. the real run: $CONFIGS on $MODEL, $REPEATS repeat(s)"
+agentcheck run --configs "$CONFIGS" --repeats "$REPEATS"
 
 echo "Done. Reports are in $WORK/more-itertools/.agentcheck/runs/*/report.md"
