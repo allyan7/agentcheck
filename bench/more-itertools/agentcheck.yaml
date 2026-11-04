@@ -27,3 +27,22 @@ configs:
     agent: oracle
   noop:
     agent: noop
+
+  # Free: a local model in LM Studio (OpenAI-compatible server on :1234) driven by aider.
+  # aider doesn't read CLAUDE.md on its own, so it's passed with --read when present.
+  local-no-claude-md: &local
+    agent: command
+    price: [0, 0]
+    env:
+      OPENAI_API_BASE: http://localhost:1234/v1
+      OPENAI_API_KEY: lm-studio
+    cmd: >-
+      aider --model "openai/${LOCAL_MODEL:-qwen2.5-coder-14b-instruct}" --yes-always --no-auto-commits
+      --no-check-update --no-show-model-warnings --no-pretty --no-stream
+      $( [ -f CLAUDE.md ] && echo --read CLAUDE.md ) --message-file {prompt_file}
+    files:
+      CLAUDE.md: null
+  local-with-claude-md:
+    <<: *local
+    files:
+      CLAUDE.md: .agentcheck/CLAUDE.md

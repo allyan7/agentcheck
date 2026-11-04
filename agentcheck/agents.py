@@ -178,6 +178,7 @@ def run_command(prompt: str, workdir: Path, cfg: dict, timeout: int, **_) -> Age
     code, out, err, timed_out = _run(cmd, workdir, timeout, env)
     prompt_file.unlink(missing_ok=True)
     res = AgentResult(ok=code == 0 and not timed_out, log=(out + err)[-20000:])
+    res.cost_usd = _price(cfg, 0, 0)  # e.g. price: [0, 0] for a local model
     try:
         data = json.loads(out.strip().splitlines()[-1])
         if isinstance(data, dict):
