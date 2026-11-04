@@ -1,0 +1,23 @@
+# .github/workflows/agentcheck.yml
+# On every PR that touches your agent setup, compare main's CLAUDE.md against the PR's.
+name: agentcheck
+on:
+  pull_request:
+    paths: ["CLAUDE.md", "AGENTS.md", ".claude/**", "agentcheck.yaml"]
+jobs:
+  agentcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the tasks point at old commits
+      - run: npm install -g @anthropic-ai/claude-code
+      - name: Save main's CLAUDE.md as the baseline
+        run: |
+          mkdir -p .agentcheck
+          git show origin/${{ github.base_ref }}:CLAUDE.md > .agentcheck/base-CLAUDE.md || : > .agentcheck/base-CLAUDE.md
+      - uses: allyan7/agentcheck@v0
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        with:
+          args: --fail-on-regression --tolerance 0.05

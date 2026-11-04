@@ -1,0 +1,30 @@
+[project]
+name = "agentcheck"
+version = "0.1.0"
+description = "Unit tests for your coding agent setup. Mines tasks from your git history and compares CLAUDE.md, prompts or agents on pass rate, cost and time."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "allyan7" }]
+keywords = ["claude-code", "codex", "coding-agents", "evals", "claude-md", "agents-md", "llm"]
+dependencies = ["pyyaml>=6"]
+
+[project.optional-dependencies]
+tinyagent = ["tinyagent-cli @ git+https://github.com/allyan7/tinyagent"]
+dev = ["pytest"]
+
+[project.scripts]
+agentcheck = "agentcheck.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/allyan7/agentcheck"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["agentcheck"]

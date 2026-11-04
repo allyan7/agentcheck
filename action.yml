@@ -1,0 +1,25 @@
+name: agentcheck
+description: Unit tests for your coding agent setup. Fails the build when a CLAUDE.md, AGENTS.md or prompt change makes the agent worse.
+branding:
+  icon: check-circle
+  color: green
+inputs:
+  config:
+    description: Path to agentcheck.yaml
+    default: agentcheck.yaml
+  args:
+    description: Extra arguments for `agentcheck run`
+    default: --fail-on-regression
+  package:
+    description: pip spec to install agentcheck from
+    default: git+https://github.com/allyan7/agentcheck
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - shell: bash
+      run: pip install "${{ inputs.package }}"
+    - shell: bash
+      run: agentcheck -c "${{ inputs.config }}" run ${{ inputs.args }}
