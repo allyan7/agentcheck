@@ -1,0 +1,29 @@
+# Benchmark: does a CLAUDE.md help Claude Code fix real more-itertools bugs?
+test_cmd: "python -m pytest -q -p no:cacheprovider {tests}"
+tasks: .agentcheck/tasks.jsonl
+timeout: 900
+repeats: 2
+jobs: 4
+
+configs:
+  no-claude-md:
+    agent: claude-code
+    model: claude-sonnet-5-5
+    max_turns: 40
+    files:
+      CLAUDE.md: null
+  with-claude-md:
+    agent: claude-code
+    model: claude-sonnet-5-5
+    max_turns: 40
+    files:
+      CLAUDE.md: .agentcheck/CLAUDE.md
+  tinyagent:                       # needs ANTHROPIC_API_KEY; skip with --configs
+    agent: tinyagent
+    model: claude-sonnet-5-5
+    files:
+      CLAUDE.md: .agentcheck/CLAUDE.md
+  oracle:
+    agent: oracle
+  noop:
+    agent: noop
